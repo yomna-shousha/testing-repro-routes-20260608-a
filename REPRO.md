@@ -176,3 +176,70 @@ Verified zone routes after deploy:
 ```
 
 Conclusion: even with a minimal Wrangler config, omitting `routes` did not delete externally managed zone routes. The side effect was enabling `workers.dev` and preview URLs by default.
+
+## Extra Check: `wrangler versions upload` and `wrangler versions deploy`
+
+Changed Worker code marker to:
+
+```text
+wrangler-versions-upload-no-routes
+```
+
+Kept `wrangler.jsonc` without `routes`:
+
+```jsonc
+{
+  "name": "testing-repro-routes-20260608-a",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-08",
+  "workers_dev": false,
+  "preview_urls": false
+}
+```
+
+Ran:
+
+```sh
+npx wrangler versions upload
+```
+
+Output included:
+
+```text
+Worker Version ID: babd3e81-3fc8-499e-9af6-e8ca1da8ada1
+
+To deploy this version to production traffic use the command wrangler versions deploy
+Changes to triggers (routes, custom domains, cron schedules, etc) must be applied with the command wrangler triggers deploy
+```
+
+Verified externally managed routes were unchanged after upload.
+
+Then ran:
+
+```sh
+npx wrangler versions deploy babd3e81-3fc8-499e-9af6-e8ca1da8ada1 --yes
+```
+
+Output included:
+
+```text
+No non-versioned settings to sync. Skipping...
+SUCCESS Deployed testing-repro-routes-20260608-a version babd3e81-3fc8-499e-9af6-e8ca1da8ada1 at 100%
+```
+
+Verified latest deployment is 100% version `babd3e81-3fc8-499e-9af6-e8ca1da8ada1`, and externally managed zone routes remained:
+
+```json
+[
+  {
+    "pattern": "testing-repro-routes-20260608-b.build.yomnashousha.com/*",
+    "script": "testing-repro-routes-20260608-a"
+  },
+  {
+    "pattern": "testing-repro-routes-20260608-c.build.yomnashousha.com/*",
+    "script": "testing-repro-routes-20260608-a"
+  }
+]
+```
+
+Conclusion: `wrangler versions upload` and `wrangler versions deploy` preserve externally managed routes when `routes` is omitted from Wrangler config. Trigger changes are explicitly separate and require `wrangler triggers deploy`.
