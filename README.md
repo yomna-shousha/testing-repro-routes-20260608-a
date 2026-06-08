@@ -10,6 +10,10 @@ Routes are intentionally not declared in `wrangler.jsonc`. The intended model is
 - CI/CD owns Worker code deployment through Wrangler.
 - `workers_dev` and `preview_urls` are explicitly disabled to avoid adding a public workers.dev target during CI deploys.
 
+The test routes were created outside Wrangler with the zone-scoped Workers Routes API. This models a Terraform-owned route binding without requiring Terraform for the repro.
+
+Do not add `routes` to `wrangler.jsonc` unless you are intentionally testing Wrangler-owned route state replacement.
+
 See `REPRO.md` for the step-by-step reproduction log.
 
 ## CI/CD

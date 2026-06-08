@@ -4,7 +4,7 @@ Date: 2026-06-08
 
 Account: `ca913382d1ac39b396106331875a1313`
 Zone: `build.yomnashousha.com`
-Zone ID: `8f1389c88325439b8bd92164b867073a`
+Zone ID: `<masked>`
 Worker: `testing-repro-routes-20260608-a`
 
 ## Goal
@@ -29,6 +29,18 @@ Result:
 
 Created a route through the zone-scoped Workers Routes API, simulating Terraform ownership.
 
+Shape of the API request:
+
+```sh
+curl -X POST "https://api.cloudflare.com/client/v4/zones/<zone-id>/workers/routes" \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "pattern": "testing-repro-routes-20260608-a.build.yomnashousha.com/*",
+    "script": "testing-repro-routes-20260608-a"
+  }'
+```
+
 Route A:
 
 ```text
@@ -39,7 +51,7 @@ Verified route list contained:
 
 ```json
 {
-  "id": "284e8dc504fb417d81d76019baced34a",
+  "id": "<route-id>",
   "pattern": "testing-repro-routes-20260608-a.build.yomnashousha.com/*",
   "script": "testing-repro-routes-20260608-a"
 }
@@ -54,6 +66,7 @@ Initial `wrangler.jsonc`:
   "name": "testing-repro-routes-20260608-a",
   "main": "src/index.ts",
   "compatibility_date": "2026-06-08",
+  // Do not add "routes" here when routes are owned by Terraform/API.
   "workers_dev": false,
   "preview_urls": false
 }
@@ -112,7 +125,7 @@ Verified matching route list after deploy:
 ```json
 [
   {
-    "id": "3a52e3ef1c9d4b5db555c059e99183f0",
+    "id": "<route-id>",
     "pattern": "testing-repro-routes-20260608-b.build.yomnashousha.com/*",
     "script": "testing-repro-routes-20260608-a"
   }
@@ -136,6 +149,8 @@ After the route replacement case, created another route outside Wrangler:
 ```text
 testing-repro-routes-20260608-c.build.yomnashousha.com/* -> testing-repro-routes-20260608-a
 ```
+
+This used the same zone-scoped Workers Routes API shape shown above, with the `pattern` changed to route C.
 
 Then changed `wrangler.jsonc` to omit all route/subdomain-related fields:
 
@@ -192,6 +207,7 @@ Kept `wrangler.jsonc` without `routes`:
   "name": "testing-repro-routes-20260608-a",
   "main": "src/index.ts",
   "compatibility_date": "2026-06-08",
+  // Do not add "routes" here when routes are owned by Terraform/API.
   "workers_dev": false,
   "preview_urls": false
 }

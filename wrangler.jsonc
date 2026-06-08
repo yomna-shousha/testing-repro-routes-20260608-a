@@ -1,4 +1,7 @@
 {
+  // Do not add "routes" here for this repro.
+  // Routes are intentionally created outside Wrangler with the Routes API
+  // to model Terraform-owned route bindings.
   "name": "testing-repro-routes-20260608-a",
   "main": "src/index.ts",
   "compatibility_date": "2026-06-08",
