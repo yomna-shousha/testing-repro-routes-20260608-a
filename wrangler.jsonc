@@ -1,0 +1,7 @@
+{
+  "name": "testing-repro-routes-20260608-a",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-08",
+  "workers_dev": false,
+  "preview_urls": false
+}
