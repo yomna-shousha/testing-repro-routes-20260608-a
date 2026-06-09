@@ -14,6 +14,21 @@ The test routes were created outside Wrangler with the zone-scoped Workers Route
 
 Do not add `routes` to `wrangler.jsonc` unless you are intentionally testing Wrangler-owned route state replacement.
 
+## Bootstrap Note
+
+If Terraform or the Workers API creates a Worker parent before any code has been uploaded, that Worker is versionless. A versionless Worker has a name and identity, but no Worker version and no runnable deployment.
+
+Routes require at least one Worker version to exist. Create the Worker parent first, deploy the first Worker version through CI/CD, and then create the route binding in Terraform or with the Routes API. After that bootstrap step, future Wrangler deploys can keep omitting `routes` and will preserve the externally managed route.
+
+Recommended order:
+
+```text
+1. Terraform/API creates Worker parent.
+2. CI/CD deploys the first Worker code version.
+3. Terraform/API creates the route binding.
+4. Future CI/CD deploys omit routes from Wrangler and preserve the externally managed route.
+```
+
 See `REPRO.md` for the step-by-step reproduction log.
 
 ## CI/CD
