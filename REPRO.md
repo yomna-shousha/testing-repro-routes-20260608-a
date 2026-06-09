@@ -11,6 +11,27 @@ Worker: `testing-repro-routes-20260608-a`
 
 Verify whether Worker code can be deployed independently from route bindings, and whether Wrangler preserves route bindings that are managed outside Wrangler.
 
+## Bootstrap Note: Versionless Worker Parents
+
+If Terraform or the Workers API creates a Worker parent before any code has been uploaded, that Worker is versionless. A versionless Worker has a name and identity, but no Worker version and no runnable deployment.
+
+Routes require at least one Worker version to exist. If you try to create a route for a Worker parent before the first version exists, route creation can fail with:
+
+```text
+10019: Cannot configure a route for a Worker which does not exist. Please ensure this Worker exists and try again.
+```
+
+For new Workers, use this bootstrap order:
+
+```text
+1. Terraform/API creates Worker parent.
+2. CI/CD deploys the first Worker code version.
+3. Terraform/API creates the route binding.
+4. Future CI/CD deploys omit routes from Wrangler and preserve the externally managed route.
+```
+
+After the first version exists, the route can be managed outside Wrangler, and future `wrangler deploy`, `wrangler versions upload`, and `wrangler versions deploy` workflows can release code without route changes as long as `route` and `routes` remain omitted from Wrangler config.
+
 ## Step 1: Create Worker Through Script API
 
 Created a new Worker named `testing-repro-routes-20260608-a` through the script upload API.
@@ -259,24 +280,3 @@ Verified latest deployment is 100% version `babd3e81-3fc8-499e-9af6-e8ca1da8ada1
 ```
 
 Conclusion: `wrangler versions upload` and `wrangler versions deploy` preserve externally managed routes when `routes` is omitted from Wrangler config. Trigger changes are explicitly separate and require `wrangler triggers deploy`.
-
-## Bootstrap Note: Versionless Worker Parents
-
-If Terraform or the Workers API creates a Worker parent before any code has been uploaded, that Worker is versionless. A versionless Worker has a name and identity, but no Worker version and no runnable deployment.
-
-Routes require at least one Worker version to exist. If you try to create a route for a Worker parent before the first version exists, route creation can fail with:
-
-```text
-10019: Cannot configure a route for a Worker which does not exist. Please ensure this Worker exists and try again.
-```
-
-For new Workers, use this bootstrap order:
-
-```text
-1. Terraform/API creates Worker parent.
-2. CI/CD deploys the first Worker code version.
-3. Terraform/API creates the route binding.
-4. Future CI/CD deploys omit routes from Wrangler and preserve the externally managed route.
-```
-
-After the first version exists, the route can be managed outside Wrangler, and future `wrangler deploy`, `wrangler versions upload`, and `wrangler versions deploy` workflows can release code without route changes as long as `route` and `routes` remain omitted from Wrangler config.
